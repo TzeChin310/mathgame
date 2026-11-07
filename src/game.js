@@ -345,9 +345,6 @@ import { createQuestionSet } from './data/questions.js';
       this.game.canvas.tabIndex = 0;
       this.game.canvas.setAttribute('aria-label', '遊戲操作區：方向鍵或 A、D 移動，空白鍵或向上鍵跳躍');
       this.game.canvas.focus({ preventScroll: true });
-      if (window.matchMedia('(max-width: 900px) and (max-height: 500px) and (orientation: landscape)').matches) {
-        document.getElementById('game-window').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
       showFeedback('出發！蒐集正確答案星球。');
     }
 
@@ -598,6 +595,7 @@ import { createQuestionSet } from './data/questions.js';
   game.canvas.tabIndex = 0;
   game.canvas.setAttribute('aria-label', '遊戲操作區：方向鍵或 A、D 移動，空白鍵或向上鍵跳躍');
 
+  // Keep the CSS rotation fallback: iOS Safari may not support orientation.lock().
   rotateModeToggle.addEventListener('click', () => {
     const useLandscapeFallback = !appShell.classList.contains('is-landscape-fallback');
     appShell.classList.toggle('is-landscape-fallback', useLandscapeFallback);
