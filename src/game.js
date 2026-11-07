@@ -8,6 +8,10 @@ import { createQuestionSet } from './data/questions.js';
   const overlay = document.getElementById('game-overlay');
   const overlayCard = document.getElementById('overlay-card');
   const overlayAction = document.getElementById('overlay-action');
+  const answerConfirm = document.getElementById('answer-confirm');
+  const answerConfirmQuestion = document.getElementById('answer-confirm-question');
+  const answerConfirmYes = document.getElementById('answer-confirm-yes');
+  const answerConfirmNo = document.getElementById('answer-confirm-no');
   const feedback = document.getElementById('feedback');
   const restartTop = document.getElementById('restart-top');
   const progressBar = document.getElementById('progress-bar');
@@ -143,6 +147,8 @@ import { createQuestionSet } from './data/questions.js';
       this.score = 0;
       this.running = false;
       this.questions = [];
+      this.pendingAnswerOrb = null;
+      this.ignoredAnswerOrb = null;
       this.worldWidth = GAME_WIDTH;
       this.worldHeight = GAME_HEIGHT;
     }
@@ -158,6 +164,10 @@ import { createQuestionSet } from './data/questions.js';
 
     create(data = {}) {
       this.questions = createQuestionSet(this.questions);
+      this.pendingAnswerOrb = null;
+      this.ignoredAnswerOrb = null;
+      answerConfirm.hidden = true;
+      answerConfirm.setAttribute('aria-hidden', 'true');
       this.levelIndex = 0;
       this.score = 0;
       this.running = false;
@@ -283,6 +293,7 @@ import { createQuestionSet } from './data/questions.js';
     }
 
     setupRound() {
+      this.ignoredAnswerOrb = null;
       if (this.answerGroup) {
         this.answerGroup.clear(true, true);
       }
@@ -364,6 +375,42 @@ import { createQuestionSet } from './data/questions.js';
     }
 
     collectAnswer(orb) {
+      if (!this.running || !orb.active || orb.collected || this.pendingAnswerOrb) return;
+      this.pendingAnswerOrb = orb;
+      this.running = false;
+      this.physics.world.pause();
+      answerConfirmQuestion.textContent = `要选「${orb.answerValue}」吗？`;
+      answerConfirm.hidden = false;
+      answerConfirm.removeAttribute('aria-hidden');
+      answerConfirmYes.focus({ preventScroll: true });
+      showFeedback('选择确定，或再想想。');
+    }
+
+    reconsiderPendingAnswer() {
+      const orb = this.pendingAnswerOrb;
+      if (!orb) return;
+      this.pendingAnswerOrb = null;
+      this.ignoredAnswerOrb = orb;
+      answerConfirm.hidden = true;
+      answerConfirm.setAttribute('aria-hidden', 'true');
+      this.running = true;
+      this.physics.world.resume();
+      this.game.canvas.focus({ preventScroll: true });
+      showFeedback('继续思考，离开答案后可再选择。');
+    }
+
+    confirmPendingAnswer() {
+      const orb = this.pendingAnswerOrb;
+      if (!orb) return;
+      this.pendingAnswerOrb = null;
+      answerConfirm.hidden = true;
+      answerConfirm.setAttribute('aria-hidden', 'true');
+      this.running = true;
+      this.physics.world.resume();
+      this.resolveAnswer(orb);
+    }
+
+    resolveAnswer(orb) {
       if (!this.running || !orb.active || orb.collected) return;
       orb.collected = true;
       const correct = orb.answerValue === this.questions[this.levelIndex].answer;
@@ -479,6 +526,9 @@ import { createQuestionSet } from './data/questions.js';
       controls.right = false;
       controls.jump = false;
       this.tapMoveDirection = null;
+      this.pendingAnswerOrb = null;
+      answerConfirm.hidden = true;
+      answerConfirm.setAttribute('aria-hidden', 'true');
       this.questions = createQuestionSet(this.questions);
       this.levelIndex = 0;
       this.score = 0;
@@ -494,7 +544,12 @@ import { createQuestionSet } from './data/questions.js';
       if (!this.running || !this.hero?.body) return;
       for (const token of this.answerGroup.getChildren()) {
         if (!token.active || token.collected) continue;
-        if (Math.abs(this.hero.x - token.x) <= 43 && Math.abs(this.hero.y - token.y) <= 48) {
+        const isNear = Math.abs(this.hero.x - token.x) <= 43 && Math.abs(this.hero.y - token.y) <= 48;
+        if (this.ignoredAnswerOrb === token) {
+          if (isNear) continue;
+          this.ignoredAnswerOrb = null;
+        }
+        if (isNear) {
           this.collectAnswer(token);
           if (!this.running) return;
         }
@@ -553,6 +608,9 @@ import { createQuestionSet } from './data/questions.js';
     const gameStage = document.getElementById('game-stage');
     requestAnimationFrame(() => game.scale.setParentSize(gameStage.clientWidth, gameStage.clientHeight));
   });
+
+  answerConfirmYes.addEventListener('click', () => sceneRef?.confirmPendingAnswer());
+  answerConfirmNo.addEventListener('click', () => sceneRef?.reconsiderPendingAnswer());
 
   overlayAction.addEventListener('click', () => {
     if (overlayAction.dataset.action === 'restart') {

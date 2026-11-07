@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7f5ec" />
     <title>數學勇者｜星星島闖關</title>
-    <link rel="stylesheet" href="src/styles.css?v=20261107-landscape-fallback" />
-    <script src="game.bundle.js?v=20261107-landscape-fallback" defer></script>
+    <link rel="stylesheet" href="src/styles.css?v=20261107-confirm-touch" />
+    <script src="game.bundle.js?v=20261107-confirm-touch" defer></script>
   </head>
   <body>
     <main class="app-shell">
@@ -66,6 +66,15 @@
                 <span>答對 <b>+10 分</b></span><span class="note-dot">·</span><span>答錯 <b>−5 分</b></span>
               </div>
               <button class="primary-button" id="overlay-action" type="button">開始冒險 <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+          <div class="answer-confirm" id="answer-confirm" hidden aria-hidden="true">
+            <div class="answer-confirm-card" role="dialog" aria-modal="true" aria-labelledby="answer-confirm-question">
+              <p class="answer-confirm-question" id="answer-confirm-question">要选这个答案吗？</p>
+              <div class="answer-confirm-actions">
+                <button class="answer-choice-button answer-confirm-yes" id="answer-confirm-yes" type="button">确定</button>
+                <button class="answer-choice-button answer-confirm-no" id="answer-confirm-no" type="button">再想想</button>
+              </div>
             </div>
           </div>
         </div>
