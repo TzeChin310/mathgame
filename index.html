@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7f5ec" />
     <title>數學勇者｜星星島闖關</title>
-    <link rel="stylesheet" href="src/styles.css?v=20261107-touch-targets-v3" />
-    <script src="game.bundle.js?v=20261107-touch-targets-v3" defer></script>
+    <link rel="stylesheet" href="src/styles.css?v=20261107-landscape-fallback" />
+    <script src="game.bundle.js?v=20261107-landscape-fallback" defer></script>
   </head>
   <body>
     <main class="app-shell">
@@ -19,6 +19,7 @@
         <button class="restart-button" id="restart-top" type="button" hidden>
           <span aria-hidden="true">↻</span> 重新開始
         </button>
+        <button class="rotate-mode-toggle" id="rotate-mode-toggle" type="button" aria-pressed="false">↻ 横向模式</button>
       </header>
 
       <section class="game-card" aria-label="數學闖關遊戲">
@@ -51,7 +52,7 @@
           <div class="collect-hint"><span aria-hidden="true">✧</span> 找到正確答案星球</div>
         </div>
 
-        <p class="orientation-hint">點開始會嘗試橫向。若沒轉：iPhone 關閉「方向鎖定」、Android 開啟「自動旋轉」；必要時改用 Safari 或 Chrome 開啟。</p>
+        <p class="orientation-hint">手机横屏游玩更佳</p>
 
         <div class="game-window" id="game-window">
           <div id="game-stage" aria-label="遊戲場景，使用方向鍵移動並跳躍蒐集答案"></div>
@@ -75,9 +76,15 @@
             <span>方向鍵 / A、D 移動　<span class="keycap">↑</span> 或 <span class="keycap">空白鍵</span> 跳躍</span>
           </div>
           <div class="touch-controls" aria-label="觸控操作">
-            <button class="move-button" id="move-left" type="button" aria-label="向左移動">←</button>
-            <button class="move-button" id="move-right" type="button" aria-label="向右移動">→</button>
-            <button class="jump-button" id="jump-button" type="button" aria-label="跳躍"><span aria-hidden="true">↑</span> 跳躍</button>
+            <button class="move-button" id="move-left" type="button" aria-label="向左移動">
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m14.5 5-7 7 7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" /></svg>
+            </button>
+            <button class="move-button" id="move-right" type="button" aria-label="向右移動">
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m9.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" /></svg>
+            </button>
+            <button class="jump-button" id="jump-button" type="button" aria-label="跳躍">
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 3 4.5 10.5h5v10h5v-10h5L12 3Z" fill="currentColor" /></svg>
+            </button>
           </div>
         </div>
         <div class="feedback" id="feedback" role="status" aria-live="polite"></div>

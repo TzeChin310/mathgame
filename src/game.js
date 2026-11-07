@@ -13,6 +13,8 @@ import { createQuestionSet } from './data/questions.js';
   const progressBar = document.getElementById('progress-bar');
   const progressFill = document.getElementById('progress-fill');
   const scoreValue = document.getElementById('score-value');
+  const appShell = document.querySelector('.app-shell');
+  const rotateModeToggle = document.getElementById('rotate-mode-toggle');
   const GAME_WIDTH = 960;
   const GAME_HEIGHT = 460;
   let sceneRef;
@@ -43,8 +45,9 @@ import { createQuestionSet } from './data/questions.js';
     const isPortraitPhone = window.matchMedia('(max-width: 600px) and (orientation: portrait)').matches;
     const orientation = window.screen?.orientation;
     const root = document.documentElement;
+    const usingRotatedFallback = appShell.classList.contains('is-landscape-fallback');
 
-    if (isPortraitPhone && typeof orientation?.lock === 'function' && typeof root.requestFullscreen === 'function') {
+    if (!usingRotatedFallback && isPortraitPhone && typeof orientation?.lock === 'function' && typeof root.requestFullscreen === 'function') {
       let enteredFullscreen = false;
       try {
         if (!document.fullscreenElement) {
@@ -539,6 +542,17 @@ import { createQuestionSet } from './data/questions.js';
   });
   game.canvas.tabIndex = 0;
   game.canvas.setAttribute('aria-label', '遊戲操作區：方向鍵或 A、D 移動，空白鍵或向上鍵跳躍');
+
+  rotateModeToggle.addEventListener('click', () => {
+    const useLandscapeFallback = !appShell.classList.contains('is-landscape-fallback');
+    appShell.classList.toggle('is-landscape-fallback', useLandscapeFallback);
+    document.body.classList.toggle('landscape-fallback-active', useLandscapeFallback);
+    rotateModeToggle.setAttribute('aria-pressed', String(useLandscapeFallback));
+    rotateModeToggle.textContent = useLandscapeFallback ? '↻ 返回直向' : '↻ 横向模式';
+    rotateModeToggle.setAttribute('aria-label', useLandscapeFallback ? '返回直向畫面' : '切換橫向畫面');
+    const gameStage = document.getElementById('game-stage');
+    requestAnimationFrame(() => game.scale.setParentSize(gameStage.clientWidth, gameStage.clientHeight));
+  });
 
   overlayAction.addEventListener('click', () => {
     if (overlayAction.dataset.action === 'restart') {
