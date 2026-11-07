@@ -4,7 +4,7 @@
 
 ## 開始遊戲
 
-`game.bundle.js` 已隨專案提供，可直接用瀏覽器開啟 `index.html` 遊玩。修改 `game.js` 後，執行 `npm install` 與 `npm run build` 重新產生遊戲檔。
+GitHub Pages 根目錄的 `index.html` 直接就是遊戲。`game.bundle.js` 已隨專案提供，可直接用瀏覽器開啟遊玩。修改 `src/game.js` 後，執行 `npm install` 與 `npm run build` 重新產生遊戲檔。
 
 ## 操作方式
 
@@ -15,8 +15,10 @@
 
 ## 檔案
 
-- `index.html`：遊戲頁面與介面結構。
-- `styles.css`：版面、色彩與行動裝置排版。
-- `game.js`：Phaser 場景、題目、角色操作與計分。
+- `index.html`：GitHub Pages 首頁，直接顯示遊戲。
+- `src/game.js`：Phaser 場景、題目、角色操作與計分。
+- `src/styles.css`：版面、色彩與行動裝置排版。
+- `src/scenes/`、`src/entities/`、`src/systems/`、`src/ui/`、`src/config/`：遊戲程式的擴充位置。
+- `assets/images/`、`assets/audio/`、`assets/fonts/`、`assets/data/`：圖片、音訊、字型與遊戲資料素材。
 - `.agents/skills/`：Phaser 官方提供的 28 份遊戲開發技能說明。
 - `game.bundle.js`：GitHub Pages 使用的 Phaser 4 遊戲包。
