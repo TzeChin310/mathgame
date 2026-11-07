@@ -1,15 +1,8 @@
 import * as Phaser from 'phaser';
+import { questions } from './data/questions.js';
 
 (() => {
   'use strict';
-
-  const questions = [
-    { name: '加法森林', skill: '加法練習', prompt: '7 + 5 = ?', answer: 12, choices: [10, 12, 13], sky: 0xc8edfb, hill: 0x8bd2b4, ground: 0x48a87e },
-    { name: '減法溪谷', skill: '減法練習', prompt: '18 − 9 = ?', answer: 9, choices: [7, 9, 11], sky: 0xcdeafb, hill: 0x91c9b6, ground: 0x449c82 },
-    { name: '乘法山丘', skill: '乘法練習', prompt: '6 × 4 = ?', answer: 24, choices: [20, 24, 28], sky: 0xc9e6fc, hill: 0x90c5bb, ground: 0x448f84 },
-    { name: '除法雲頂', skill: '除法練習', prompt: '35 ÷ 5 = ?', answer: 7, choices: [5, 6, 7], sky: 0xcdeaf9, hill: 0x8fcbbd, ground: 0x3f9a87 },
-    { name: '星星數學塔', skill: '終極挑戰', prompt: '36 ÷ 4 + 8 = ?', answer: 17, choices: [16, 17, 18], sky: 0xc5e5fa, hill: 0x8ac7b4, ground: 0x3d927b },
-  ];
 
   const controls = { left: false, right: false, jump: false };
   const overlay = document.getElementById('game-overlay');
@@ -41,14 +34,14 @@ import * as Phaser from 'phaser';
     overlayCard.classList.remove('is-complete');
     void overlayCard.offsetWidth;
     overlayCard.classList.add('is-complete');
-    restartTop.hidden = complete;
+    restartTop.hidden = true;
   }
 
   function updateHud(scene) {
     const question = questions[scene.levelIndex];
     const level = scene.levelIndex + 1;
-    document.getElementById('level-label').textContent = `第 ${level} 關`;
-    document.getElementById('progress-caption').textContent = `島嶼 ${level} / ${questions.length}`;
+    document.getElementById('level-label').textContent = `第 ${level} 題`;
+    document.getElementById('progress-caption').textContent = `題目 ${level} / ${questions.length}`;
     document.getElementById('stage-name').textContent = question.name;
     document.getElementById('question-text').textContent = question.prompt;
     scoreValue.textContent = String(scene.score);
@@ -119,12 +112,20 @@ import * as Phaser from 'phaser';
       this.running = false;
     }
 
+    preload() {
+      const base = 'assets/images/kenney/abstract-platformer/';
+      this.load.image('kenney-hero-stand', `${base}hero-stand.png`);
+      this.load.image('kenney-hero-walk-1', `${base}hero-walk-1.png`);
+      this.load.image('kenney-hero-walk-2', `${base}hero-walk-2.png`);
+      this.load.image('kenney-hero-walk-3', `${base}hero-walk-3.png`);
+      this.load.image('kenney-hero-fall', `${base}hero-fall.png`);
+    }
+
     create(data = {}) {
       this.levelIndex = 0;
       this.score = 0;
       this.running = false;
       this.drawBackdrop();
-      this.makeHeroTexture();
       this.makeOrbTexture();
       this.physics.world.setBounds(0, 0, 960, 460);
       this.physics.world.pause();
@@ -139,9 +140,9 @@ import * as Phaser from 'phaser';
       } else {
         setOverlay({
           art: '🚀',
-          kicker: '五座島嶼等你探索',
+          kicker: '十題數學挑戰',
           title: '準備好出發了嗎？',
-          message: '跳上平台，碰到正確答案星球即可過關。答對加 10 分，答錯扣 5 分。',
+          message: '從小學到大學，題目依序加難。答對 +10 分，答錯 −5 分，蒐集正確答案前往下一題。',
           action: '開始冒險',
         });
       }
@@ -191,39 +192,6 @@ import * as Phaser from 'phaser';
       cloud.fillCircle(x + 25 * scale, y + 3 * scale, 16 * scale);
     }
 
-    makeHeroTexture() {
-      if (this.textures.exists('little-hero')) return;
-      const g = this.make.graphics({ x: 0, y: 0, add: false });
-      g.fillStyle(0x304a68, 0.18);
-      g.fillEllipse(24, 55, 33, 6);
-      g.fillStyle(0xf4a145, 1);
-      g.fillRoundedRect(12, 28, 24, 25, 8);
-      g.fillStyle(0x438bd0, 1);
-      g.fillRoundedRect(7, 30, 32, 22, 9);
-      g.fillStyle(0xffd36f, 1);
-      g.fillRoundedRect(4, 33, 8, 15, 4);
-      g.fillStyle(0xffd9ae, 1);
-      g.fillCircle(23, 21, 16);
-      g.fillStyle(0x53434a, 1);
-      g.fillRoundedRect(8, 7, 30, 11, 6);
-      g.fillStyle(0x5f4a4b, 1);
-      g.fillCircle(12, 16, 6);
-      g.fillCircle(34, 15, 5);
-      g.fillStyle(0x29394c, 1);
-      g.fillCircle(18, 22, 1.8);
-      g.fillCircle(28, 22, 1.8);
-      g.lineStyle(2, 0xb76b53, 1);
-      g.beginPath(); g.arc(23, 25, 5, 0.15, Math.PI - 0.15, false); g.strokePath();
-      g.fillStyle(0x3d5270, 1);
-      g.fillRoundedRect(10, 48, 10, 8, 3);
-      g.fillRoundedRect(26, 48, 10, 8, 3);
-      g.fillStyle(0xf3f1db, 1);
-      g.fillRoundedRect(7, 53, 14, 5, 2);
-      g.fillRoundedRect(24, 53, 14, 5, 2);
-      g.generateTexture('little-hero', 48, 60);
-      g.destroy();
-    }
-
     makeOrbTexture() {
       if (this.textures.exists('answer-star')) return;
       const g = this.make.graphics({ x: 0, y: 0, add: false });
@@ -264,8 +232,8 @@ import * as Phaser from 'phaser';
       const floor = this.add.rectangle(480, 449, 960, 25, 0x388b72).setDepth(2);
       this.physics.add.existing(floor, true);
       this.jumpsRemaining = 2;
-      this.hero = this.physics.add.sprite(70, 408, 'little-hero').setDepth(6);
-      this.hero.setBodySize(27, 39).setOffset(10, 15);
+      this.hero = this.physics.add.sprite(70, 408, 'kenney-hero-stand').setDepth(6);
+      this.hero.setBodySize(27, 39).setOffset(9, 12);
       this.hero.setCollideWorldBounds(true);
       this.hero.setMaxVelocity(300, 760);
       this.hero.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, 960, 460));
@@ -311,6 +279,7 @@ import * as Phaser from 'phaser';
       });
       this.hero.setPosition(70, 408);
       this.hero.setVelocity(0, 0);
+      this.hero.setTexture('kenney-hero-stand');
       this.jumpsRemaining = 2;
       this.hero.clearTint();
     }
@@ -369,7 +338,7 @@ import * as Phaser from 'phaser';
       this.running = false;
       this.score += 10;
       updateHud(this);
-      showFeedback('答對了！星星島亮起來了。　+10 分', 'success');
+      showFeedback('答對了！挑戰下一題。　+10 分', 'success');
       this.physics.world.pause();
       this.answerGroup.getChildren().forEach((token) => {
         if (!token.active) return;
@@ -387,7 +356,7 @@ import * as Phaser from 'phaser';
         this.setupRound();
         this.running = true;
         this.physics.world.resume();
-        showFeedback('下一座島嶼，繼續加油！');
+        showFeedback('下一題難度升級，繼續加油！');
       });
     }
 
@@ -452,9 +421,9 @@ import * as Phaser from 'phaser';
     finishGame() {
       this.running = false;
       this.physics.world.pause();
-      const stars = this.score >= 45 ? '★★★' : this.score >= 30 ? '★★☆' : '★☆☆';
+      const stars = this.score >= 90 ? '★★★' : this.score >= 70 ? '★★☆' : '★☆☆';
       document.getElementById('overlay-art').textContent = stars;
-      document.getElementById('overlay-kicker').textContent = '五座島嶼全數點亮';
+      document.getElementById('overlay-kicker').textContent = '十題挑戰全部完成';
       document.getElementById('overlay-title').textContent = '闖關成功！';
       document.getElementById('overlay-message').textContent = `小勇者得到 ${this.score} 分，帶著星星回家吧！`;
       document.getElementById('scoring-note').hidden = true;
@@ -463,7 +432,7 @@ import * as Phaser from 'phaser';
       overlay.classList.remove('is-hidden');
       overlay.removeAttribute('aria-hidden');
       restartTop.hidden = true;
-      showFeedback('太棒了，你完成了全部五關！', 'success');
+      showFeedback('太棒了，你完成了全部十題！', 'success');
     }
 
     restartGame() {
@@ -474,7 +443,7 @@ import * as Phaser from 'phaser';
       this.levelIndex = 0;
       this.score = 0;
       this.hero.body.setEnable(true);
-      this.hero.setActive(true).setVisible(true);
+      this.hero.setActive(true).setVisible(true).setTexture('kenney-hero-stand');
       this.setupRound();
       updateHud(this);
       this.physics.world.resume();
@@ -503,7 +472,19 @@ import * as Phaser from 'phaser';
         this.hero.setFlipX(false);
       }
 
-      if (this.isHeroGrounded() && this.hero.body.velocity.y > -30) this.jumpsRemaining = 2;
+      const grounded = this.isHeroGrounded();
+      if (grounded && this.hero.body.velocity.y > -30) this.jumpsRemaining = 2;
+
+      if (!grounded && this.hero.body.velocity.y > 30) {
+        this.hero.setTexture('kenney-hero-fall');
+      } else if (!grounded) {
+        this.hero.setTexture('kenney-hero-stand');
+      } else if (left !== right) {
+        const walkFrame = (Math.floor(this.time.now / 120) % 3) + 1;
+        this.hero.setTexture(`kenney-hero-walk-${walkFrame}`);
+      } else {
+        this.hero.setTexture('kenney-hero-stand');
+      }
     }
   }
 

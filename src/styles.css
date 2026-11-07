@@ -72,8 +72,8 @@ h1 { margin: 0; color: var(--ink); font-size: clamp(19px, 2.4vw, 25px); font-wei
 .level-icon { color: #f0a941; font-size: 12px; }
 .progress-caption { color: #a2a8b4; font-size: 11px; font-weight: 800; }
 .progress-track { position: relative; height: 8px; margin: 0 28px 14px; border-radius: 99px; background: #edf0eb; }
-.progress-track > span:first-child { display: block; width: 20%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f5be4c, #ef9b35); transition: width .5s cubic-bezier(.2,.8,.2,1); }
-.progress-stars { position: absolute; inset: -5px 0 auto; display: flex; justify-content: space-between; padding: 0 16%; color: #d9ded4; font-size: 14px; line-height: 18px; pointer-events: none; }
+.progress-track > span:first-child { display: block; width: 10%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f5be4c, #ef9b35); transition: width .5s cubic-bezier(.2,.8,.2,1); }
+.progress-stars { position: absolute; inset: -5px 0 auto; display: flex; justify-content: space-between; padding: 0 5%; color: #d9ded4; font-size: 14px; line-height: 18px; pointer-events: none; }
 .progress-stars i { font-style: normal; }
 
 .question-row { display: flex; align-items: center; gap: 12px; min-height: 72px; margin: 0 19px 13px; padding: 11px 17px; border: 1px solid #e5efe9; border-radius: 16px; background: linear-gradient(100deg, #f5fbf5, #f3f9f6 62%, #f6faf7); }

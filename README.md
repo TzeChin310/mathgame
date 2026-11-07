@@ -1,6 +1,6 @@
 # 數學勇者｜星星島闖關
 
-以 Phaser 4 製作的國小數學平台闖關小遊戲，共五關。答對加 10 分，答錯扣 5 分；每關蒐集正確答案星球後即可前往下一關。
+以 Phaser 4 製作的數學平台闖關小遊戲，共十題，從小學加法、乘法與分數，循序提升到國中百分比、方程式與畢氏定理、高中二次方程式與三角函數，以及大學微分與定積分。答對加 10 分；答錯扣 5 分並播放爆炸，點擊重新開始後回到第一題。
 
 ## 開始遊戲
 
@@ -17,8 +17,12 @@ GitHub Pages 根目錄的 `index.html` 直接就是遊戲。`game.bundle.js` 已
 
 - `index.html`：GitHub Pages 首頁，直接顯示遊戲。
 - `src/game.js`：Phaser 場景、題目、角色操作與計分。
+- `src/data/questions.js`：由簡到難的十道數學題與答案選項。
 - `src/styles.css`：版面、色彩與行動裝置排版。
 - `src/scenes/`、`src/entities/`、`src/systems/`、`src/ui/`、`src/config/`：遊戲程式的擴充位置。
 - `assets/images/`、`assets/audio/`、`assets/fonts/`、`assets/data/`：圖片、音訊、字型與遊戲資料素材。
+- `assets/images/kenney/abstract-platformer/`：遊戲角色使用的 Kenney 站立、行走與跳躍素材；來源和 CC0 授權記錄於 `assets/ASSET_CREDITS.md`。
+- `assets/sources/kenney/abstract-platformer.zip`：原始 Kenney 素材包；授權檔另存於同目錄。
 - `.agents/skills/`：Phaser 官方提供的 28 份遊戲開發技能說明。
+- `.agents/skills/web-asset-finder/`、`.agents/skills/kenney-asset-finder/`：專案用的網頁素材搜尋與 Kenney 素材下載技能。
 - `game.bundle.js`：GitHub Pages 使用的 Phaser 4 遊戲包。
