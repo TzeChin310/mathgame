@@ -39,6 +39,29 @@ import { createQuestionSet } from './data/questions.js';
     restartTop.hidden = true;
   }
 
+  async function startGameFromUserGesture() {
+    const isPortraitPhone = window.matchMedia('(max-width: 600px) and (orientation: portrait)').matches;
+    const orientation = window.screen?.orientation;
+    const root = document.documentElement;
+
+    if (isPortraitPhone && typeof orientation?.lock === 'function' && typeof root.requestFullscreen === 'function') {
+      let enteredFullscreen = false;
+      try {
+        if (!document.fullscreenElement) {
+          await root.requestFullscreen();
+          enteredFullscreen = Boolean(document.fullscreenElement);
+        }
+        await orientation.lock('landscape');
+      } catch (_) {
+        if (enteredFullscreen && document.fullscreenElement) {
+          try { await document.exitFullscreen(); } catch (_) { /* Keep the game usable if fullscreen cannot exit. */ }
+        }
+      }
+    }
+
+    if (sceneRef?.running === false) sceneRef.startPlaying();
+  }
+
   function updateHud(scene) {
     const question = scene.questions[scene.levelIndex];
     const level = scene.levelIndex + 1;
@@ -518,7 +541,7 @@ import { createQuestionSet } from './data/questions.js';
       sceneRef.restartGame();
       return;
     }
-    if (sceneRef?.running === false) sceneRef.startPlaying();
+    startGameFromUserGesture();
   });
   restartTop.addEventListener('click', () => sceneRef?.restartGame());
 
