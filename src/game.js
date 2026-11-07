@@ -78,9 +78,10 @@ import { createQuestionSet } from './data/questions.js';
     const button = document.getElementById(id);
     const press = (event) => {
       event.preventDefault();
-      if (!isJump) controls[controlName] = true;
+      if (isJump) sceneRef?.requestJump();
+      else controls[controlName] = true;
       button.classList.add('is-pressed');
-      if (!isJump && button.setPointerCapture && event.pointerId !== undefined) {
+      if (button.setPointerCapture && event.pointerId !== undefined) {
         try { button.setPointerCapture(event.pointerId); } catch (_) { /* Pointer may already be released. */ }
       }
     };
@@ -92,9 +93,12 @@ import { createQuestionSet } from './data/questions.js';
     button.addEventListener('pointerup', release);
     button.addEventListener('pointercancel', release);
     button.addEventListener('lostpointercapture', release);
-    button.addEventListener('click', () => {
-      if (isJump) sceneRef?.requestJump();
-      else sceneRef?.tapMove(controlName);
+    button.addEventListener('click', (event) => {
+      if (isJump) {
+        if (event.detail === 0) sceneRef?.requestJump();
+        return;
+      }
+      sceneRef?.tapMove(controlName);
     });
     button.addEventListener('contextmenu', (event) => event.preventDefault());
   }
