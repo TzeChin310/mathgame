@@ -135,7 +135,7 @@
           art: '🚀',
           kicker: '五座島嶼等你探索',
           title: '準備好出發了嗎？',
-          message: '在島上左右移動，碰到正確答案星球就能前往下一關。也可以跳上平台探索。',
+          message: '跳上平台，碰到正確答案星球即可過關。答對加 10 分，答錯扣 5 分。',
           action: '開始冒險',
         });
       }
@@ -279,9 +279,9 @@
       const question = questions[this.levelIndex];
       const choices = Phaser.Utils.Array.Shuffle([...question.choices]);
       const spots = [
-        { x: 220, y: 398 },
-        { x: 490, y: 398 },
-        { x: 760, y: 398 },
+        { x: 292, y: 318 },
+        { x: 548, y: 273 },
+        { x: 799, y: 318 },
       ];
       choices.forEach((value, index) => {
         const spot = spots[index];
