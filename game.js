@@ -31,6 +31,7 @@
     document.getElementById('overlay-title').textContent = title;
     document.getElementById('overlay-message').textContent = message;
     document.getElementById('scoring-note').hidden = complete;
+    overlayAction.hidden = false;
     overlayAction.innerHTML = `${action} <span aria-hidden="true">→</span>`;
     overlay.classList.remove('is-hidden');
     overlayCard.classList.remove('is-complete');
@@ -81,12 +82,13 @@
   bindHoldButton('jump-button', 'jump', true);
 
   const keyBindings = {
-    ArrowLeft: 'left', KeyA: 'left',
-    ArrowRight: 'right', KeyD: 'right',
-    ArrowUp: 'jump', KeyW: 'jump', Space: 'jump',
+    ArrowLeft: 'left', Left: 'left', arrowleft: 'left', KeyA: 'left', a: 'left',
+    ArrowRight: 'right', Right: 'right', arrowright: 'right', KeyD: 'right', d: 'right',
+    ArrowUp: 'jump', Up: 'jump', arrowup: 'jump', KeyW: 'jump', w: 'jump',
+    Space: 'jump', space: 'jump', ' ': 'jump',
   };
   window.addEventListener('keydown', (event) => {
-    const control = keyBindings[event.code];
+    const control = keyBindings[event.code] || keyBindings[event.key] || keyBindings[event.key.toLowerCase()];
     if (!control) return;
     event.preventDefault();
     if (control === 'jump') {
@@ -96,7 +98,7 @@
     }
   }, { passive: false });
   window.addEventListener('keyup', (event) => {
-    const control = keyBindings[event.code];
+    const control = keyBindings[event.code] || keyBindings[event.key] || keyBindings[event.key.toLowerCase()];
     if (control) controls[control] = false;
   });
   window.addEventListener('blur', () => {
@@ -238,9 +240,9 @@
     setupArena() {
       this.platforms = this.physics.add.staticGroup();
       const platformSpecs = [
-        [292, 356, 166],
-        [548, 311, 172],
-        [799, 356, 168],
+        [292, 384, 166],
+        [548, 352, 172],
+        [799, 384, 168],
       ];
       this.supportSurfaces = [{ left: 0, right: 960, top: 436 }];
       for (const [x, y, width] of platformSpecs) {
@@ -257,6 +259,7 @@
 
       const floor = this.add.rectangle(480, 449, 960, 25, 0x388b72).setDepth(2);
       this.physics.add.existing(floor, true);
+      this.jumpsRemaining = 2;
       this.hero = this.physics.add.sprite(70, 408, 'little-hero').setDepth(6);
       this.hero.setBodySize(27, 39).setOffset(10, 15);
       this.hero.setCollideWorldBounds(true);
@@ -279,9 +282,9 @@
       const question = questions[this.levelIndex];
       const choices = Phaser.Utils.Array.Shuffle([...question.choices]);
       const spots = [
-        { x: 292, y: 318 },
-        { x: 548, y: 273 },
-        { x: 799, y: 318 },
+        { x: 292, y: 346 },
+        { x: 548, y: 314 },
+        { x: 799, y: 346 },
       ];
       choices.forEach((value, index) => {
         const spot = spots[index];
@@ -304,12 +307,14 @@
       });
       this.hero.setPosition(70, 408);
       this.hero.setVelocity(0, 0);
+      this.jumpsRemaining = 2;
       this.hero.clearTint();
     }
 
     startPlaying() {
       if (this.running) return;
       this.running = true;
+      overlayAction.hidden = false;
       overlay.classList.add('is-hidden');
       restartTop.hidden = false;
       this.physics.world.resume();
@@ -348,18 +353,8 @@
       const correct = orb.answerValue === questions[this.levelIndex].answer;
       if (!correct) {
         this.score -= 5;
-        orb.answerLabel.destroy();
-        this.tweens.add({
-          targets: orb,
-          alpha: 0,
-          scale: 0.2,
-          duration: 230,
-          onComplete: () => orb.destroy(),
-        });
-        this.hero.setTint(0xffc0a8);
-        this.time.delayedCall(260, () => this.hero.clearTint());
         updateHud(this);
-        showFeedback('差一點！再找找看。　−5 分', 'error');
+        this.explodeAndRestart();
         return;
       }
 
@@ -386,6 +381,56 @@
         this.physics.world.resume();
         showFeedback('下一座島嶼，繼續加油！');
       });
+    }
+
+    explodeAndRestart() {
+      this.running = false;
+      this.physics.world.pause();
+      const x = this.hero.x;
+      const y = this.hero.y;
+      this.hero.setVelocity(0, 0);
+      this.hero.setVisible(false);
+      this.hero.body.enable = false;
+      this.cameras.main.shake(420, 0.012);
+
+      const flash = this.add.circle(x, y, 12, 0xffed9a).setDepth(30);
+      const shockwave = this.add.circle(x, y, 16, 0xffffff, 0).setStrokeStyle(5, 0xff7955, 1).setDepth(29);
+      this.tweens.add({ targets: flash, scale: 6, alpha: 0, duration: 520, ease: 'Cubic.easeOut', onComplete: () => flash.destroy() });
+      this.tweens.add({ targets: shockwave, scale: 5, alpha: 0, duration: 580, ease: 'Cubic.easeOut', onComplete: () => shockwave.destroy() });
+
+      const sparkColors = [0xff704d, 0xffc44f, 0xfff0a0, 0x71d1bc];
+      for (let i = 0; i < 9; i += 1) {
+        const angle = (Math.PI * 2 * i) / 9;
+        const spark = this.add.star(x, y, 5, 4, 10, sparkColors[i % sparkColors.length]).setDepth(31);
+        this.tweens.add({
+          targets: spark,
+          x: x + Math.cos(angle) * 76,
+          y: y + Math.sin(angle) * 64,
+          angle: 300,
+          scale: 0,
+          alpha: 0,
+          duration: 640,
+          ease: 'Cubic.easeOut',
+          onComplete: () => spark.destroy(),
+        });
+      }
+
+      this.answerGroup.getChildren().forEach((token) => {
+        if (!token.active) return;
+        if (token.answerLabel?.active) token.answerLabel.destroy();
+        this.tweens.add({ targets: token, alpha: 0, scale: 0.3, duration: 360, onComplete: () => token.destroy() });
+      });
+
+      document.getElementById('overlay-art').textContent = '💥';
+      document.getElementById('overlay-kicker').textContent = '答錯了！扣 5 分';
+      document.getElementById('overlay-title').textContent = '轟！遊戲重新開始';
+      document.getElementById('overlay-message').textContent = '小勇者稍作休息，馬上從第一關重新出發！';
+      document.getElementById('scoring-note').hidden = true;
+      overlayAction.hidden = true;
+      overlay.classList.remove('is-hidden');
+      restartTop.hidden = true;
+      showFeedback('答錯了！−5 分　💥　準備重新開始', 'error');
+      window.setTimeout(() => this.restartGame(), 1500);
     }
 
     finishGame() {
@@ -428,15 +473,17 @@
       if (left === right) {
         this.hero.setVelocityX(0);
       } else if (left) {
-        this.hero.setVelocityX(-235);
+        this.hero.setVelocityX(-280);
         this.hero.setFlipX(true);
       } else {
-        this.hero.setVelocityX(235);
+        this.hero.setVelocityX(280);
         this.hero.setFlipX(false);
       }
 
-      if (jumpPressed && this.isHeroGrounded()) {
-        this.hero.setVelocityY(-470);
+      if (this.isHeroGrounded()) this.jumpsRemaining = 2;
+      if (jumpPressed && this.jumpsRemaining > 0) {
+        this.hero.setVelocityY(-560);
+        this.jumpsRemaining -= 1;
       }
     }
   }
