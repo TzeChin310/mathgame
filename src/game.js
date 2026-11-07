@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { questions } from './data/questions.js';
+import { createQuestionSet } from './data/questions.js';
 
 (() => {
   'use strict';
@@ -40,14 +40,14 @@ import { questions } from './data/questions.js';
   }
 
   function updateHud(scene) {
-    const question = questions[scene.levelIndex];
+    const question = scene.questions[scene.levelIndex];
     const level = scene.levelIndex + 1;
     document.getElementById('level-label').textContent = `第 ${level} 題`;
-    document.getElementById('progress-caption').textContent = `題目 ${level} / ${questions.length}`;
+    document.getElementById('progress-caption').textContent = `題目 ${level} / ${scene.questions.length}`;
     document.getElementById('stage-name').textContent = question.name;
     document.getElementById('question-text').textContent = question.prompt;
     scoreValue.textContent = String(scene.score);
-    progressFill.style.width = `${(level / questions.length) * 100}%`;
+    progressFill.style.width = `${(level / scene.questions.length) * 100}%`;
     progressBar.setAttribute('aria-valuenow', String(level));
   }
 
@@ -112,6 +112,7 @@ import { questions } from './data/questions.js';
       this.levelIndex = 0;
       this.score = 0;
       this.running = false;
+      this.questions = [];
       this.worldWidth = GAME_WIDTH;
       this.worldHeight = GAME_HEIGHT;
     }
@@ -126,6 +127,7 @@ import { questions } from './data/questions.js';
     }
 
     create(data = {}) {
+      this.questions = createQuestionSet(this.questions);
       this.levelIndex = 0;
       this.score = 0;
       this.running = false;
@@ -146,7 +148,7 @@ import { questions } from './data/questions.js';
           art: '🚀',
           kicker: '十題數學挑戰',
           title: '準備好出發了嗎？',
-          message: '從小學到大學，題目依序加難。答對 +10 分，答錯 −5 分，蒐集正確答案前往下一題。',
+          message: '每次闖關都會抽到不同題目，難度從小學一路提升到大學。答對 +10 分，答錯 −5 分。',
           action: '開始冒險',
         });
       }
@@ -259,7 +261,7 @@ import { questions } from './data/questions.js';
       }
       this.answerLabels = [];
       this.answerGroup = this.add.group();
-      const question = questions[this.levelIndex];
+      const question = this.questions[this.levelIndex];
       const choices = Phaser.Utils.Array.Shuffle([...question.choices]);
       const spots = this.platformSpecs.map(([x, y]) => ({ x, y: y - 38 }));
       choices.forEach((value, index) => {
@@ -334,7 +336,7 @@ import { questions } from './data/questions.js';
     collectAnswer(orb) {
       if (!this.running || !orb.active || orb.collected) return;
       orb.collected = true;
-      const correct = orb.answerValue === questions[this.levelIndex].answer;
+      const correct = orb.answerValue === this.questions[this.levelIndex].answer;
       if (!correct) {
         this.score -= 5;
         updateHud(this);
@@ -354,7 +356,7 @@ import { questions } from './data/questions.js';
       });
 
       this.time.delayedCall(950, () => {
-        if (this.levelIndex === questions.length - 1) {
+        if (this.levelIndex === this.questions.length - 1) {
           this.finishGame();
           return;
         }
@@ -447,6 +449,7 @@ import { questions } from './data/questions.js';
       controls.right = false;
       controls.jump = false;
       this.tapMoveDirection = null;
+      this.questions = createQuestionSet(this.questions);
       this.levelIndex = 0;
       this.score = 0;
       this.hero.body.setEnable(true);
