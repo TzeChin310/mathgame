@@ -587,13 +587,26 @@ import { createQuestionSet } from './data/questions.js';
     height: GAME_HEIGHT,
     backgroundColor: '#c8edfb',
     render: { antialias: true, pixelArt: false, roundPixels: true },
-    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.NO_CENTER },
     physics: { default: 'arcade', arcade: { gravity: { y: 1000 }, debug: false } },
     scene: [MathIslandScene],
     audio: { noAudio: true },
   });
   game.canvas.tabIndex = 0;
   game.canvas.setAttribute('aria-label', '遊戲操作區：方向鍵或 A、D 移動，空白鍵或向上鍵跳躍');
+  const gameStage = document.getElementById('game-stage');
+  const syncGameStageSize = () => {
+    const width = gameStage.clientWidth;
+    const height = gameStage.clientHeight;
+    if (width > 0 && height > 0) game.scale.setParentSize(width, height);
+  };
+
+  if ('ResizeObserver' in window) {
+    const gameStageResizeObserver = new ResizeObserver(syncGameStageSize);
+    gameStageResizeObserver.observe(gameStage);
+  } else {
+    window.addEventListener('resize', () => requestAnimationFrame(syncGameStageSize), { passive: true });
+  }
 
   // Keep the CSS rotation fallback: iOS Safari may not support orientation.lock().
   rotateModeToggle.addEventListener('click', () => {
@@ -603,8 +616,7 @@ import { createQuestionSet } from './data/questions.js';
     rotateModeToggle.setAttribute('aria-pressed', String(useLandscapeFallback));
     rotateModeToggle.textContent = useLandscapeFallback ? '↻ 返回直向' : '↻ 横向模式';
     rotateModeToggle.setAttribute('aria-label', useLandscapeFallback ? '返回直向畫面' : '切換橫向畫面');
-    const gameStage = document.getElementById('game-stage');
-    requestAnimationFrame(() => game.scale.setParentSize(gameStage.clientWidth, gameStage.clientHeight));
+    requestAnimationFrame(syncGameStageSize);
   });
 
   answerConfirmYes.addEventListener('click', () => sceneRef?.confirmPendingAnswer());

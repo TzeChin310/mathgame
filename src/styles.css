@@ -87,7 +87,7 @@ h1 { margin: 0; color: var(--ink); font-size: clamp(19px, 2.4vw, 25px); font-wei
 
 .game-window { position: relative; overflow: hidden; width: calc(100% - 38px); aspect-ratio: 960 / 460; margin: 0 auto; border: 1px solid #cee0e3; border-radius: 16px; background: #b8e6f4; box-shadow: inset 0 3px 10px rgba(49,93,103,.08); touch-action: none; overscroll-behavior: contain; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .orientation-hint { display: none; }
-#game-stage { position: absolute; inset: 0; }
+#game-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 #game-stage canvas { display: block; max-width: 100%; max-height: 100%; }
 .game-overlay { position: absolute; z-index: 4; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(31, 47, 68, .24); backdrop-filter: blur(3px); transition: opacity .2s ease, visibility .2s ease; }
 .game-overlay.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
