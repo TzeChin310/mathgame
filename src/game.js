@@ -13,6 +13,14 @@ import { questions } from './data/questions.js';
   const progressBar = document.getElementById('progress-bar');
   const progressFill = document.getElementById('progress-fill');
   const scoreValue = document.getElementById('score-value');
+  const isPortraitLayout = window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches;
+  const gameWindow = document.getElementById('game-window');
+  const GAME_WIDTH = isPortraitLayout ? 540 : 960;
+  const GAME_HEIGHT = isPortraitLayout
+    ? Math.max(600, Math.min(730, Math.round(window.innerHeight * 0.86)))
+    : 460;
+  gameWindow.classList.toggle('is-portrait-layout', isPortraitLayout);
+  gameWindow.style.setProperty('--game-aspect', `${GAME_WIDTH} / ${GAME_HEIGHT}`);
   let sceneRef;
 
   function showFeedback(message, type = '') {
@@ -110,6 +118,9 @@ import { questions } from './data/questions.js';
       this.levelIndex = 0;
       this.score = 0;
       this.running = false;
+      this.isPortraitLayout = isPortraitLayout;
+      this.worldWidth = GAME_WIDTH;
+      this.worldHeight = GAME_HEIGHT;
     }
 
     preload() {
@@ -125,9 +136,9 @@ import { questions } from './data/questions.js';
       this.levelIndex = 0;
       this.score = 0;
       this.running = false;
+      this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
       this.drawBackdrop();
       this.makeOrbTexture();
-      this.physics.world.setBounds(0, 0, 960, 460);
       this.physics.world.pause();
       this.setupArena();
       this.setupRound();
@@ -149,6 +160,11 @@ import { questions } from './data/questions.js';
     }
 
     drawBackdrop() {
+      if (this.isPortraitLayout) {
+        this.drawPortraitBackdrop();
+        return;
+      }
+
       this.backdrop = this.add.graphics();
       this.backdrop.fillStyle(0xc8edfb, 1);
       this.backdrop.fillRect(0, 0, 960, 460);
@@ -183,6 +199,42 @@ import { questions } from './data/questions.js';
       this.add.text(421, 212, '·', { fontFamily: 'Arial', fontSize: '29px', color: '#ffffff' }).setAlpha(0.65);
     }
 
+    drawPortraitBackdrop() {
+      const width = this.worldWidth;
+      const height = this.worldHeight;
+      const floorTop = height - 24;
+      this.backdrop = this.add.graphics();
+      this.backdrop.fillStyle(0xc8edfb, 1);
+      this.backdrop.fillRect(0, 0, width, height);
+      this.backdrop.fillStyle(0xffffff, 0.34);
+      this.backdrop.fillCircle(width - 83, 76, 43);
+      this.backdrop.fillStyle(0xfff2bd, 0.95);
+      this.backdrop.fillCircle(width - 83, 76, 30);
+      this.drawCloud(95, 128, 0.72);
+      this.drawCloud(298, 190, 0.58);
+      this.drawCloud(431, 275, 0.45);
+      this.backdrop.fillStyle(0xa9d9d2, 1);
+      this.backdrop.fillTriangle(0, floorTop - 147, 139, floorTop - 424, 323, floorTop - 147);
+      this.backdrop.fillTriangle(189, floorTop - 137, 372, floorTop - 450, 560, floorTop - 137);
+      this.backdrop.fillStyle(0xbce4d2, 0.8);
+      this.backdrop.fillTriangle(0, floorTop - 98, 218, floorTop - 278, 454, floorTop - 98);
+      this.backdrop.fillTriangle(103, floorTop - 85, 389, floorTop - 277, width, floorTop - 85);
+      this.add.rectangle(width / 2, floorTop - 3, width, 54, 0x48a87e).setDepth(1);
+      this.add.rectangle(width / 2, floorTop - 28, width, 9, 0x83d29e).setDepth(1);
+      this.add.rectangle(width / 2, floorTop + 13, width, 22, 0x388b72).setDepth(1);
+      this.add.rectangle(width / 2, floorTop - 15, width, 2, 0xb3e6a8).setDepth(1);
+
+      for (let x = 18; x < width; x += 58) {
+        const tuft = this.add.graphics().setDepth(2);
+        tuft.fillStyle(x % 2 ? 0x9fe3a0 : 0xb7e5a4, 0.9);
+        tuft.fillTriangle(x, floorTop - 21, x + 5, floorTop - 32, x + 10, floorTop - 21);
+        tuft.fillTriangle(x + 7, floorTop - 21, x + 13, floorTop - 29, x + 19, floorTop - 21);
+      }
+
+      this.add.text(24, 26, '✦', { fontFamily: 'Arial', fontSize: '16px', color: '#fff8ce' }).setAlpha(0.85);
+      this.add.text(width - 42, 286, '✦', { fontFamily: 'Arial', fontSize: '18px', color: '#fff5bd' }).setAlpha(0.9);
+    }
+
     drawCloud(x, y, scale) {
       const cloud = this.add.graphics();
       cloud.fillStyle(0xffffff, 0.78);
@@ -211,12 +263,15 @@ import { questions } from './data/questions.js';
 
     setupArena() {
       this.platforms = this.physics.add.staticGroup();
-      const platformSpecs = [
-        [292, 409, 166],
-        [548, 376, 172],
-        [799, 409, 168],
-      ];
-      this.supportSurfaces = [{ left: 0, right: 960, top: 436 }];
+      const floorTop = this.worldHeight - 24;
+      const mobilePlatformY = floorTop - 86;
+      const platformSpecs = this.isPortraitLayout
+        ? [[180, mobilePlatformY, 168], [360, mobilePlatformY - 100, 168], [180, mobilePlatformY - 200, 168]]
+        : [[292, 409, 166], [548, 376, 172], [799, 409, 168]];
+      this.platformSpecs = platformSpecs;
+      this.spawnX = 70;
+      this.spawnY = floorTop - 28;
+      this.supportSurfaces = [{ left: 0, right: this.worldWidth, top: floorTop }];
       for (const [x, y, width] of platformSpecs) {
         const platform = this.add.rectangle(x, y, width, 18, 0x4b9d83).setDepth(3);
         this.physics.add.existing(platform, true);
@@ -229,17 +284,17 @@ import { questions } from './data/questions.js';
         this.add.circle(x + width / 2 - 17, y - 13, 3, 0xe9f4d4).setDepth(4);
       }
 
-      const floor = this.add.rectangle(480, 449, 960, 25, 0x388b72).setDepth(2);
+      const floor = this.add.rectangle(this.worldWidth / 2, this.worldHeight - 11, this.worldWidth, 25, 0x388b72).setDepth(2);
       this.physics.add.existing(floor, true);
       this.jumpsRemaining = 2;
-      this.hero = this.physics.add.sprite(70, 408, 'kenney-hero-stand').setDepth(6);
+      this.hero = this.physics.add.sprite(this.spawnX, this.spawnY, 'kenney-hero-stand').setDepth(6);
       this.hero.setBodySize(27, 39).setOffset(9, 12);
       this.hero.setCollideWorldBounds(true);
       this.hero.setMaxVelocity(300, 760);
-      this.hero.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, 960, 460));
+      this.hero.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, this.worldWidth, this.worldHeight));
       this.physics.add.collider(this.hero, floor);
       this.physics.add.collider(this.hero, this.platforms);
-      this.add.text(20, 375, '出發！', { fontFamily: 'Noto Sans TC, sans-serif', fontSize: '12px', color: '#27785f', fontStyle: 'bold' }).setDepth(5);
+      this.add.text(20, floorTop - 61, '出發！', { fontFamily: 'Noto Sans TC, sans-serif', fontSize: '12px', color: '#27785f', fontStyle: 'bold' }).setDepth(5);
     }
 
     setupRound() {
@@ -253,11 +308,7 @@ import { questions } from './data/questions.js';
       this.answerGroup = this.add.group();
       const question = questions[this.levelIndex];
       const choices = Phaser.Utils.Array.Shuffle([...question.choices]);
-      const spots = [
-        { x: 292, y: 371 },
-        { x: 548, y: 338 },
-        { x: 799, y: 371 },
-      ];
+      const spots = this.platformSpecs.map(([x, y]) => ({ x, y: y - 38 }));
       choices.forEach((value, index) => {
         const spot = spots[index];
         const orb = this.add.image(spot.x, spot.y, 'answer-star').setDepth(5);
@@ -277,7 +328,7 @@ import { questions } from './data/questions.js';
         this.answerLabels.push(label);
         this.answerGroup.add(orb);
       });
-      this.hero.setPosition(70, 408);
+      this.hero.setPosition(this.spawnX, this.spawnY);
       this.hero.setVelocity(0, 0);
       this.hero.setTexture('kenney-hero-stand');
       this.jumpsRemaining = 2;
@@ -294,7 +345,7 @@ import { questions } from './data/questions.js';
       restartTop.hidden = false;
       this.physics.world.resume();
       this.hero.setVelocity(0, 0);
-      this.hero.setPosition(70, 408);
+      this.hero.setPosition(this.spawnX, this.spawnY);
       this.game.canvas.tabIndex = 0;
       this.game.canvas.setAttribute('aria-label', '遊戲操作區：方向鍵或 A、D 移動，空白鍵或向上鍵跳躍');
       this.game.canvas.focus({ preventScroll: true });
@@ -491,8 +542,8 @@ import { questions } from './data/questions.js';
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game-stage',
-    width: 960,
-    height: 460,
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
     backgroundColor: '#c8edfb',
     render: { antialias: true, pixelArt: false, roundPixels: true },
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
