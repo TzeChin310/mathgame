@@ -1,3 +1,5 @@
+import * as Phaser from 'phaser';
+
 (() => {
   'use strict';
 
@@ -32,8 +34,10 @@
     document.getElementById('overlay-message').textContent = message;
     document.getElementById('scoring-note').hidden = complete;
     overlayAction.hidden = false;
+    overlayAction.dataset.action = 'start';
     overlayAction.innerHTML = `${action} <span aria-hidden="true">→</span>`;
     overlay.classList.remove('is-hidden');
+    overlay.removeAttribute('aria-hidden');
     overlayCard.classList.remove('is-complete');
     void overlayCard.offsetWidth;
     overlayCard.classList.add('is-complete');
@@ -56,14 +60,14 @@
     const button = document.getElementById(id);
     const press = (event) => {
       event.preventDefault();
-      controls[controlName] = true;
+      if (!isJump) controls[controlName] = true;
       button.classList.add('is-pressed');
       if (!isJump && button.setPointerCapture && event.pointerId !== undefined) {
         try { button.setPointerCapture(event.pointerId); } catch (_) { /* Pointer may already be released. */ }
       }
     };
     const release = () => {
-      controls[controlName] = false;
+      if (!isJump) controls[controlName] = false;
       button.classList.remove('is-pressed');
     };
     button.addEventListener('pointerdown', press);
@@ -92,14 +96,14 @@
     if (!control) return;
     event.preventDefault();
     if (control === 'jump') {
-      if (!event.repeat) controls.jump = true;
+      if (!event.repeat) sceneRef?.requestJump();
     } else {
       controls[control] = true;
     }
   }, { passive: false });
   window.addEventListener('keyup', (event) => {
     const control = keyBindings[event.code] || keyBindings[event.key] || keyBindings[event.key.toLowerCase()];
-    if (control) controls[control] = false;
+    if (control && control !== 'jump') controls[control] = false;
   });
   window.addEventListener('blur', () => {
     controls.left = false;
@@ -240,9 +244,9 @@
     setupArena() {
       this.platforms = this.physics.add.staticGroup();
       const platformSpecs = [
-        [292, 384, 166],
-        [548, 352, 172],
-        [799, 384, 168],
+        [292, 409, 166],
+        [548, 376, 172],
+        [799, 409, 168],
       ];
       this.supportSurfaces = [{ left: 0, right: 960, top: 436 }];
       for (const [x, y, width] of platformSpecs) {
@@ -282,9 +286,9 @@
       const question = questions[this.levelIndex];
       const choices = Phaser.Utils.Array.Shuffle([...question.choices]);
       const spots = [
-        { x: 292, y: 346 },
-        { x: 548, y: 314 },
-        { x: 799, y: 346 },
+        { x: 292, y: 371 },
+        { x: 548, y: 338 },
+        { x: 799, y: 371 },
       ];
       choices.forEach((value, index) => {
         const spot = spots[index];
@@ -315,7 +319,9 @@
       if (this.running) return;
       this.running = true;
       overlayAction.hidden = false;
+      overlayAction.dataset.action = 'start';
       overlay.classList.add('is-hidden');
+      overlay.setAttribute('aria-hidden', 'true');
       restartTop.hidden = false;
       this.physics.world.resume();
       this.hero.setVelocity(0, 0);
@@ -333,7 +339,9 @@
     }
 
     requestJump() {
-      if (this.running) controls.jump = true;
+      if (!this.running || this.jumpsRemaining <= 0) return;
+      this.hero.setVelocityY(-560);
+      this.jumpsRemaining -= 1;
     }
 
     isHeroGrounded() {
@@ -385,18 +393,24 @@
 
     explodeAndRestart() {
       this.running = false;
-      this.physics.world.pause();
       const x = this.hero.x;
       const y = this.hero.y;
       this.hero.setVelocity(0, 0);
       this.hero.setVisible(false);
-      this.hero.body.enable = false;
+      this.hero.body.setEnable(false);
       this.cameras.main.shake(420, 0.012);
 
       const flash = this.add.circle(x, y, 12, 0xffed9a).setDepth(30);
       const shockwave = this.add.circle(x, y, 16, 0xffffff, 0).setStrokeStyle(5, 0xff7955, 1).setDepth(29);
       this.tweens.add({ targets: flash, scale: 6, alpha: 0, duration: 520, ease: 'Cubic.easeOut', onComplete: () => flash.destroy() });
-      this.tweens.add({ targets: shockwave, scale: 5, alpha: 0, duration: 580, ease: 'Cubic.easeOut', onComplete: () => shockwave.destroy() });
+      this.tweens.add({
+        targets: shockwave,
+        scale: 5,
+        alpha: 0,
+        duration: 900,
+        ease: 'Cubic.easeOut',
+        onComplete: () => shockwave.destroy(),
+      });
 
       const sparkColors = [0xff704d, 0xffc44f, 0xfff0a0, 0x71d1bc];
       for (let i = 0; i < 9; i += 1) {
@@ -424,13 +438,15 @@
       document.getElementById('overlay-art').textContent = '💥';
       document.getElementById('overlay-kicker').textContent = '答錯了！扣 5 分';
       document.getElementById('overlay-title').textContent = '轟！遊戲重新開始';
-      document.getElementById('overlay-message').textContent = '小勇者稍作休息，馬上從第一關重新出發！';
+      document.getElementById('overlay-message').textContent = '小勇者需要重新出發，點擊按鈕回到第一關。';
       document.getElementById('scoring-note').hidden = true;
-      overlayAction.hidden = true;
+      overlayAction.hidden = false;
+      overlayAction.innerHTML = '重新開始 <span aria-hidden="true">↻</span>';
+      overlayAction.dataset.action = 'restart';
       overlay.classList.remove('is-hidden');
+      overlay.removeAttribute('aria-hidden');
       restartTop.hidden = true;
       showFeedback('答錯了！−5 分　💥　準備重新開始', 'error');
-      window.setTimeout(() => this.restartGame(), 1500);
     }
 
     finishGame() {
@@ -442,8 +458,10 @@
       document.getElementById('overlay-title').textContent = '闖關成功！';
       document.getElementById('overlay-message').textContent = `小勇者得到 ${this.score} 分，帶著星星回家吧！`;
       document.getElementById('scoring-note').hidden = true;
+      overlayAction.dataset.action = 'restart';
       overlayAction.innerHTML = '再玩一次 <span aria-hidden="true">↻</span>';
       overlay.classList.remove('is-hidden');
+      overlay.removeAttribute('aria-hidden');
       restartTop.hidden = true;
       showFeedback('太棒了，你完成了全部五關！', 'success');
     }
@@ -452,7 +470,15 @@
       controls.left = false;
       controls.right = false;
       controls.jump = false;
-      this.scene.restart({ quickStart: true });
+      this.tapMoveDirection = null;
+      this.levelIndex = 0;
+      this.score = 0;
+      this.hero.body.setEnable(true);
+      this.hero.setActive(true).setVisible(true);
+      this.setupRound();
+      updateHud(this);
+      this.physics.world.resume();
+      this.startPlaying();
     }
 
     update() {
@@ -467,9 +493,6 @@
       const tapIsActive = this.tapMoveDirection && this.time.now < this.tapMoveUntil;
       const left = controls.left || (tapIsActive && this.tapMoveDirection === 'left');
       const right = controls.right || (tapIsActive && this.tapMoveDirection === 'right');
-      const jumpPressed = controls.jump;
-      controls.jump = false;
-
       if (left === right) {
         this.hero.setVelocityX(0);
       } else if (left) {
@@ -480,11 +503,7 @@
         this.hero.setFlipX(false);
       }
 
-      if (this.isHeroGrounded()) this.jumpsRemaining = 2;
-      if (jumpPressed && this.jumpsRemaining > 0) {
-        this.hero.setVelocityY(-560);
-        this.jumpsRemaining -= 1;
-      }
+      if (this.isHeroGrounded() && this.hero.body.velocity.y > -30) this.jumpsRemaining = 2;
     }
   }
 
@@ -504,7 +523,7 @@
   game.canvas.setAttribute('aria-label', '遊戲操作區：方向鍵或 A、D 移動，空白鍵或向上鍵跳躍');
 
   overlayAction.addEventListener('click', () => {
-    if (sceneRef?.running === false && overlayAction.textContent.includes('再玩一次')) {
+    if (overlayAction.dataset.action === 'restart') {
       sceneRef.restartGame();
       return;
     }

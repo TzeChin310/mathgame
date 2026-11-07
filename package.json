@@ -1,0 +1,14 @@
+{
+  "name": "math-quest",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild game.js --bundle --minify --format=iife --target=es2020 --outfile=game.bundle.js"
+  },
+  "dependencies": {
+    "phaser": "^4.2.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
