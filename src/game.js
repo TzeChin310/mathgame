@@ -13,14 +13,8 @@ import { questions } from './data/questions.js';
   const progressBar = document.getElementById('progress-bar');
   const progressFill = document.getElementById('progress-fill');
   const scoreValue = document.getElementById('score-value');
-  const isPortraitLayout = window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches;
-  const gameWindow = document.getElementById('game-window');
-  const GAME_WIDTH = isPortraitLayout ? 540 : 960;
-  const GAME_HEIGHT = isPortraitLayout
-    ? Math.max(600, Math.min(730, Math.round(window.innerHeight * 0.86)))
-    : 460;
-  gameWindow.classList.toggle('is-portrait-layout', isPortraitLayout);
-  gameWindow.style.setProperty('--game-aspect', `${GAME_WIDTH} / ${GAME_HEIGHT}`);
+  const GAME_WIDTH = 960;
+  const GAME_HEIGHT = 460;
   let sceneRef;
 
   function showFeedback(message, type = '') {
@@ -118,7 +112,6 @@ import { questions } from './data/questions.js';
       this.levelIndex = 0;
       this.score = 0;
       this.running = false;
-      this.isPortraitLayout = isPortraitLayout;
       this.worldWidth = GAME_WIDTH;
       this.worldHeight = GAME_HEIGHT;
     }
@@ -160,11 +153,6 @@ import { questions } from './data/questions.js';
     }
 
     drawBackdrop() {
-      if (this.isPortraitLayout) {
-        this.drawPortraitBackdrop();
-        return;
-      }
-
       this.backdrop = this.add.graphics();
       this.backdrop.fillStyle(0xc8edfb, 1);
       this.backdrop.fillRect(0, 0, 960, 460);
@@ -199,42 +187,6 @@ import { questions } from './data/questions.js';
       this.add.text(421, 212, '·', { fontFamily: 'Arial', fontSize: '29px', color: '#ffffff' }).setAlpha(0.65);
     }
 
-    drawPortraitBackdrop() {
-      const width = this.worldWidth;
-      const height = this.worldHeight;
-      const floorTop = height - 24;
-      this.backdrop = this.add.graphics();
-      this.backdrop.fillStyle(0xc8edfb, 1);
-      this.backdrop.fillRect(0, 0, width, height);
-      this.backdrop.fillStyle(0xffffff, 0.34);
-      this.backdrop.fillCircle(width - 83, 76, 43);
-      this.backdrop.fillStyle(0xfff2bd, 0.95);
-      this.backdrop.fillCircle(width - 83, 76, 30);
-      this.drawCloud(95, 128, 0.72);
-      this.drawCloud(298, 190, 0.58);
-      this.drawCloud(431, 275, 0.45);
-      this.backdrop.fillStyle(0xa9d9d2, 1);
-      this.backdrop.fillTriangle(0, floorTop - 147, 139, floorTop - 424, 323, floorTop - 147);
-      this.backdrop.fillTriangle(189, floorTop - 137, 372, floorTop - 450, 560, floorTop - 137);
-      this.backdrop.fillStyle(0xbce4d2, 0.8);
-      this.backdrop.fillTriangle(0, floorTop - 98, 218, floorTop - 278, 454, floorTop - 98);
-      this.backdrop.fillTriangle(103, floorTop - 85, 389, floorTop - 277, width, floorTop - 85);
-      this.add.rectangle(width / 2, floorTop - 3, width, 54, 0x48a87e).setDepth(1);
-      this.add.rectangle(width / 2, floorTop - 28, width, 9, 0x83d29e).setDepth(1);
-      this.add.rectangle(width / 2, floorTop + 13, width, 22, 0x388b72).setDepth(1);
-      this.add.rectangle(width / 2, floorTop - 15, width, 2, 0xb3e6a8).setDepth(1);
-
-      for (let x = 18; x < width; x += 58) {
-        const tuft = this.add.graphics().setDepth(2);
-        tuft.fillStyle(x % 2 ? 0x9fe3a0 : 0xb7e5a4, 0.9);
-        tuft.fillTriangle(x, floorTop - 21, x + 5, floorTop - 32, x + 10, floorTop - 21);
-        tuft.fillTriangle(x + 7, floorTop - 21, x + 13, floorTop - 29, x + 19, floorTop - 21);
-      }
-
-      this.add.text(24, 26, '✦', { fontFamily: 'Arial', fontSize: '16px', color: '#fff8ce' }).setAlpha(0.85);
-      this.add.text(width - 42, 286, '✦', { fontFamily: 'Arial', fontSize: '18px', color: '#fff5bd' }).setAlpha(0.9);
-    }
-
     drawCloud(x, y, scale) {
       const cloud = this.add.graphics();
       cloud.fillStyle(0xffffff, 0.78);
@@ -264,10 +216,11 @@ import { questions } from './data/questions.js';
     setupArena() {
       this.platforms = this.physics.add.staticGroup();
       const floorTop = this.worldHeight - 24;
-      const mobilePlatformY = floorTop - 86;
-      const platformSpecs = this.isPortraitLayout
-        ? [[180, mobilePlatformY, 168], [360, mobilePlatformY - 100, 168], [180, mobilePlatformY - 200, 168]]
-        : [[292, 409, 166], [548, 376, 172], [799, 409, 168]];
+      const platformSpecs = [
+        [292, 409, 166],
+        [548, 376, 172],
+        [799, 409, 168],
+      ];
       this.platformSpecs = platformSpecs;
       this.spawnX = 70;
       this.spawnY = floorTop - 28;
@@ -349,6 +302,9 @@ import { questions } from './data/questions.js';
       this.game.canvas.tabIndex = 0;
       this.game.canvas.setAttribute('aria-label', '遊戲操作區：方向鍵或 A、D 移動，空白鍵或向上鍵跳躍');
       this.game.canvas.focus({ preventScroll: true });
+      if (window.matchMedia('(max-width: 900px) and (max-height: 500px) and (orientation: landscape)').matches) {
+        document.getElementById('game-window').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       showFeedback('出發！蒐集正確答案星球。');
     }
 
