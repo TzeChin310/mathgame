@@ -156,8 +156,8 @@ h1 { margin: 0; color: var(--ink); font-size: clamp(19px, 2.4vw, 25px); font-wei
   .control-row { justify-content: center; min-height: 0; padding: 8px 8px 3px; }
   .control-help { display: none; }
   .touch-controls { justify-content: center; gap: 10px; width: 100%; }
-  .move-button, .jump-button { height: 60px; min-width: 60px; border-radius: 15px; font-size: 24px; }
-  .jump-button { min-width: 116px; gap: 6px; padding: 0 12px; font-size: 14px; }
+  .move-button, .jump-button { height: 68px; min-width: 68px; border-radius: 16px; font-size: 26px; }
+  .jump-button { min-width: 130px; gap: 8px; padding: 0 14px; font-size: 15px; }
   .feedback { min-height: 25px; padding: 3px 10px 7px; font-size: 11px; }
   .page-footer { flex-wrap: wrap; justify-content: center; gap: 4px 12px; padding-top: 8px; font-size: 9px; text-align: center; }
 }
@@ -183,8 +183,8 @@ h1 { margin: 0; color: var(--ink); font-size: clamp(19px, 2.4vw, 25px); font-wei
   .control-row { justify-content: center; min-height: 0; padding: 0; }
   .control-help { display: none; }
   .touch-controls { position: fixed; z-index: 8; bottom: max(8px, env(safe-area-inset-bottom)); left: 50%; gap: 8px; width: auto; padding: 5px; border: 1px solid rgba(220, 226, 218, .9); border-radius: 14px; background: rgba(255, 254, 248, .94); box-shadow: 0 4px 16px rgba(40, 55, 70, .18); transform: translateX(-50%); backdrop-filter: blur(6px); }
-  .move-button, .jump-button { height: 48px; min-width: 48px; border-radius: 13px; font-size: 21px; }
-  .jump-button { min-width: 96px; gap: 6px; padding: 0 12px; font-size: 13px; }
+  .move-button, .jump-button { height: 68px; min-width: 68px; border-radius: 16px; font-size: 26px; }
+  .jump-button { min-width: 130px; gap: 8px; padding: 0 14px; font-size: 15px; }
   .feedback, .page-footer { display: none; }
 }
 
@@ -216,8 +216,8 @@ h1 { margin: 0; color: var(--ink); font-size: clamp(19px, 2.4vw, 25px); font-wei
   .control-row { justify-content: center; min-height: 0; padding: 3px; }
   .control-help { display: none; }
   .touch-controls { position: fixed; z-index: 8; bottom: max(6px, env(safe-area-inset-bottom)); left: 50%; gap: 8px; width: auto; padding: 5px; border: 1px solid rgba(220, 226, 218, .9); border-radius: 14px; background: rgba(255, 254, 248, .94); box-shadow: 0 4px 16px rgba(40, 55, 70, .18); transform: translateX(-50%); backdrop-filter: blur(6px); }
-  .move-button, .jump-button { height: 60px; min-width: 60px; border-radius: 15px; font-size: 24px; }
-  .jump-button { min-width: 116px; gap: 6px; padding: 0 12px; font-size: 14px; }
+  .move-button, .jump-button { height: 68px; min-width: 68px; border-radius: 16px; font-size: 26px; }
+  .jump-button { min-width: 130px; gap: 8px; padding: 0 14px; font-size: 15px; }
   .feedback { min-height: 20px; padding: 2px 8px 4px; font-size: 10px; }
   .page-footer { display: none; }
 }
@@ -225,6 +225,6 @@ h1 { margin: 0; color: var(--ink); font-size: clamp(19px, 2.4vw, 25px); font-wei
 @media (pointer: coarse) and (min-width: 641px) {
   .control-row { min-height: 68px; }
   .touch-controls { gap: 10px; }
-  .move-button, .jump-button { height: 48px; min-width: 48px; border-radius: 13px; font-size: 21px; }
-  .jump-button { min-width: 96px; gap: 6px; padding: 0 12px; font-size: 13px; }
+  .move-button, .jump-button { height: 68px; min-width: 68px; border-radius: 16px; font-size: 26px; }
+  .jump-button { min-width: 130px; gap: 8px; padding: 0 14px; font-size: 15px; }
 }
